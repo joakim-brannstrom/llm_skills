@@ -71,3 +71,16 @@ Follow the protocol. See `references/workflow.md` for detailed steps.
 - Decision rules with examples: `references/decision-rules.md`
 - Detailed workflow: `references/workflow.md`
 - Ddoc handling for D code: `references/ddoc.md`
+- Utility scripts: `scripts/README.md`
+
+## Utility Scripts
+
+See `scripts\/README.md` for full documentation. Quick reference:
+
+| Script | Purpose |
+|--------|---------|
+| `fix_comments_escaping.py` | Fix escaped comment slashes, duplicates |
+| `check_raw_bytes.py` | Check raw bytes for escaped characters |
+| `verify_comments.py` | Verify comment fixes, check remaining issues |
+
+- Ddoc handling for D code: `references/ddoc.md`
