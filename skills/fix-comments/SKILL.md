@@ -29,34 +29,25 @@ Use this skill when the user asks to:
 
 ## Classification
 
-Classify each comment into one of four categories:
-
-| Category | Action | Criteria |
-|----------|--------|----------|
-| **KEEP** | Leave as-is | Explains non-obvious behavior, architecture, edge cases, external APIs, thread-safety, lifecycle, field relationships, module docs, license info |
-| **REMOVE** | Delete | Restates what code shows, obvious control flow, task references, section markers, wrong/outdated content |
-| **REWRITE** | Condense | Verbose but contains useful information — trim to 1-2 lines |
-| **UNSURE** | Keep and flag | Uncertain — note location, text, and reasoning in report |
-
-See `references/decision-rules.md` for concrete patterns with examples.
+Classify each comment as KEEP, REMOVE, REWRITE, or UNSURE.
+See `references/decision-rules.md` for concrete patterns and style rules.
 
 ## Workflow
 
-Follow the protocol. See `references/workflow.md` for detailed steps.
+See `references/workflow.md` for detailed steps.
 
-1. **Discovery** — List target files, read completely, catalog all comments with line numbers and types.
-2. **Classification** — Classify each comment as KEEP, REMOVE, REWRITE, or UNSURE.
-3. **Execution** — Apply edits (single-file: `editFile`; multi-file: Python script for bulk).
-4. **Verification** — Re-read modified files, confirm no code removed, check formatting.
+1. **Discovery** — List target files, read completely, catalog all comments.
+2. **Classification** — Classify each comment using decision rules.
+3. **Execution** — Apply edits (single-file: `editFile`; multi-file: Python script).
+4. **Verification** — Re-read modified files, confirm no code removed.
 5. **Report** — Summarize changes in table format with reasons.
 
 ## Special Cases
 
-- **Unit tests**: Keep test purpose descriptions, limitation notes, and integration instructions.
+- **Unit tests**: Keep test purpose descriptions and limitation notes.
 - **Outdated comments**: Update to match code, don't just remove.
-- **Multi-line doc comments**: Condense to 1-2 lines when possible.
 - **Doc tool blocks** (`/** */`, `///`): Don't remove unless explicitly asked.
-- **D code (ddoc)**: Ddoc comments (`/** */`, `///`, `/+ +/`) feed the documentation generator. See `references/ddoc.md`.
+- **D code (ddoc)**: Ddoc comments feed the documentation generator. See `references/ddoc.md`.
 
 ## Anti-Patterns
 
@@ -68,19 +59,7 @@ Follow the protocol. See `references/workflow.md` for detailed steps.
 
 ## References
 
-- Decision rules with examples: `references/decision-rules.md`
+- Decision rules and style guidelines: `references/decision-rules.md`
 - Detailed workflow: `references/workflow.md`
 - Ddoc handling for D code: `references/ddoc.md`
 - Utility scripts: `scripts/README.md`
-
-## Utility Scripts
-
-See `scripts\/README.md` for full documentation. Quick reference:
-
-| Script | Purpose |
-|--------|---------|
-| `fix_comments_escaping.py` | Fix escaped comment slashes, duplicates |
-| `check_raw_bytes.py` | Check raw bytes for escaped characters |
-| `verify_comments.py` | Verify comment fixes, check remaining issues |
-
-- Ddoc handling for D code: `references/ddoc.md`

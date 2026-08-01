@@ -1,5 +1,15 @@
 # Decision Rules — Concrete Criteria
 
+## Comment Style Rules
+
+When rewriting or evaluating comments, enforce these style guidelines:
+
+- **Concise**: 1-2 lines max. Break longer explanations into separate short comments.
+- **No hard-wrapping**: Do not wrap to a fixed column width. Let lines flow naturally.
+- **No mid-sentence breaks**: Each line should be a complete thought, not a sentence split across lines.
+- **Simple language**: ASD-STE100 Simplified Technical English. Short words, short sentences.
+- **Code first, comments later**: Write code first. Add comments only where genuinely needed.
+
 ## Always Remove
 
 | Pattern | Example | Reason |
