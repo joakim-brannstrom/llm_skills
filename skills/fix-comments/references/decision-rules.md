@@ -23,6 +23,8 @@ When rewriting or evaluating comments, enforce these style guidelines:
 | Section markers | `// --- Unit tests ---` | Visual noise, no semantic value |
 | Wrong/outdated content | Comment describes behavior code doesn't implement | Misleading |
 
+Task references into a deleted plan or requirements document are a distinct case: see `references/plan-artifacts.md` for scope rules (comments vs. code) and rephrasing patterns.
+
 ## Always Keep
 
 | Pattern | Example | Reason |
