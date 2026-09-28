@@ -4,13 +4,14 @@ description: >-
   Clean up and condense comments in source code. Remove redundant, obvious, and
   outdated comments while keeping those that explain non-obvious behavior. Also
   strips references to plan/requirement artifacts (task IDs, phases,
-  requirement IDs, gates) from comments and docs. Use when asked to review,
+  requirement IDs, gates) and line-number references from comments and docs.
+  Use when asked to review,
   clean, fix, improve, or refactor comments in any source code, or to remove
   dangling plan-artifact references. Triggers on: fix comments, clean comments,
   remove comments, comment cleanup, comment quality, redundant comments,
   outdated comments, plan artifact references, requirement ID cleanup, strip
-  task references, remove gate references.
-version: 1.1.0
+  task references, remove gate references, line reference cleanup.
+version: 1.2.0
 ---
 
 # Fix Comments Skill

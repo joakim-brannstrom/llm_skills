@@ -22,8 +22,28 @@ When rewriting or evaluating comments, enforce these style guidelines:
 | Obvious null/error checks | `// Null check prevents crash` before `if (x is null)` | Defensive pattern is evident |
 | Section markers | `// --- Unit tests ---` | Visual noise, no semantic value |
 | Wrong/outdated content | Comment describes behavior code doesn't implement | Misleading |
+| Line-number reference | `// actual logic is on line 42` | Brittle: any edit above shifts lines, the reference silently rots |
 
 Task references into a deleted plan or requirements document are a distinct case: see `references/plan-artifacts.md` for scope rules (comments vs. code) and rephrasing patterns.
+
+## Line-Number References
+
+Comments that locate code **within the same file** by line number are brittle:
+any insertion or deletion above them shifts lines, and the reference silently
+goes stale. Always remove or rewrite:
+
+- **Rewrite** to a stable anchor: a symbol, function, type, or section name.
+- **Remove** the comment if the line reference is all it says.
+- **Never** put a line number into a comment, even if it is currently correct.
+
+| Before | After |
+|--------|-------|
+| `// actual logic is on line 42` | `// actual logic in validate()` |
+| `// flag is set at line 120` | `// flag is set in the constructor` |
+| `// TODO: fix line 300` | `// TODO: fix the resize bug` (remove if nothing else to say) |
+
+Line numbers of *external* artifacts (a parser's error output, another tool's
+input) are data, not navigation — judge them with the normal rules.
 
 ## Always Keep
 
