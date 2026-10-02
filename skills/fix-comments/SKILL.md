@@ -1,17 +1,20 @@
 ---
 name: fix-comments
 description: >-
-  Clean up and condense comments in source code. Remove redundant, obvious, and
-  outdated comments while keeping those that explain non-obvious behavior. Also
-  strips references to plan/requirement artifacts (task IDs, phases,
-  requirement IDs, gates) and line-number references from comments and docs.
-  Use when asked to review,
-  clean, fix, improve, or refactor comments in any source code, or to remove
-  dangling plan-artifact references. Triggers on: fix comments, clean comments,
+  Clean up and condense comments in source code. Scope covers all comment
+  forms — ddoc (`/** */`, `///`, `/++ ...`) is not protected — plus comments
+  and descriptive strings in unittests (UDA description strings, assert
+  messages). Remove redundant, obvious, and outdated comments while keeping
+  those that explain non-obvious behavior. Also strips references to
+  plan/requirement artifacts (task IDs, phases, decision points, gates) from
+  comments, test strings, and docs; plan references are never kept because
+  plan documents are ephemeral. Use when asked to review, clean, fix,
+  improve, or refactor comments in any source code, or to remove dangling
+  plan-artifact references. Triggers on: fix comments, clean comments,
   remove comments, comment cleanup, comment quality, redundant comments,
   outdated comments, plan artifact references, requirement ID cleanup, strip
   task references, remove gate references, line reference cleanup.
-version: 1.2.0
+version: 1.3.0
 ---
 
 # Fix Comments Skill
@@ -31,7 +34,29 @@ Use this skill when the user asks to:
 - Make comments more concise or shorter
 - Fix outdated comments that no longer match the code
 - Review comment quality
-- Strip references to plan/requirement artifacts (tasks, phases, requirement IDs, gates) from comments or docs
+- Strip references to plan/requirement artifacts (tasks, phases, decision points, gates) from comments, test strings, or docs
+
+## Scope
+
+**In scope** (judged by the decision rules):
+- All comment forms — including ddoc (`/** */`, `/++ ... +/`, `///`), which
+  is **not protected** (`references/ddoc.md`).
+- Comments inside unittests.
+- Descriptive string literals: UDA description strings `@("...")` on
+  unittests, and strings used inside unittests (assert messages, expected
+  outputs) — they commonly carry plan-artifact references
+  (`references/plan-artifacts.md`).
+- Markdown docs (design docs, AGENTS.md, docstrings) and anchor links.
+
+**Out of scope**: identifiers, non-descriptive string literals — left in
+place, listed in the report, never skipped silently.
+
+A string rewrite inside a unittest may require a minimal test rewrite
+(reworded assert, shortened description): same assertions, same expected
+values, same coverage.
+
+**Plan references are never kept.** Plan/requirement documents are ephemeral
+— deleted after the work — so every in-scope reference is removed or rephrased.
 
 ## Classification
 
@@ -41,8 +66,8 @@ See `references/decision-rules.md` for concrete patterns and style rules.
 ## Workflow
 
 See `references/workflow.md` for detailed steps. The run is a checkpointed
-per-file loop — only on-disk state (todo list, edited files, report)
-reliably survives context compression.
+per-file loop — only on-disk state (todo, edited files, report) survives
+compression.
 
 1. **Discovery** — List target files, write the todo list to disk. Do not read file contents.
 2. **Per-file loop** — For each file: read it (one at a time), classify tersely, edit (few edits: `editFile`; many: one atomic `applyDiff`), verify, mark DONE in the todo list, append the per-file report section to disk, drop the file.
@@ -51,10 +76,16 @@ reliably survives context compression.
 ## Special Cases
 
 - **Unit tests**: Keep test purpose descriptions and limitation notes.
+  Comments and strings in unittests are in scope; plan-ref removals may
+  need a minimal test rewrite that preserves behavior.
 - **Outdated comments**: Update to match code, don't just remove.
-- **Doc tool blocks** (`/** */`, `///`): Don't remove unless explicitly asked.
-- **D code (ddoc)**: Ddoc comments feed the documentation generator. See `references/ddoc.md`.
-- **Plan-artifact references**: removal is rephrasing, not deletion; docs and anchor links are in scope; code identifiers/strings are out of scope by default. See `references/plan-artifacts.md`.
+- **D code (ddoc)**: In scope like regular comments. `Example:`/`Examples:`
+  are compiled and run as tests — a change must not alter what they verify;
+  report every touched section. `Copyright:`/`License:`/`Authors:` kept.
+  See `references/ddoc.md`.
+- **Plan-artifact references**: removal is rephrasing, not deletion;
+  in-scope references are never kept (ephemeral documents). See
+  `references/plan-artifacts.md`.
 
 ## Anti-Patterns
 
@@ -62,7 +93,8 @@ reliably survives context compression.
 - **Bulk reads**: Loading multiple target files into context at once — process one file at a time; only durable on-disk state survives compression.
 - **Line-number drift**: Track line shifts after each removal.
 - **Ignoring context**: A comment may seem redundant in isolation but add value when skimming.
-- **Breaking doc tools**: Preserve blocks feeding documentation generators.
+- **Treating ddoc as untouchable**: docs-generation is not a keep-reason.
+- **Silent test changes**: confirm unittest rewrites change nothing and report them — coverage must never change invisibly.
 - **Aggressive test cleanup**: Test comments explain intent assertions alone don't show.
 
 ## References

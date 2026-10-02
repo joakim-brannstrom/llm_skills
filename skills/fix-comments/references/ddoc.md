@@ -1,8 +1,9 @@
 # Ddoc Handling for D Code
 
 Ddoc is D's embedded documentation system. Ddoc comments are extracted at compile
-time and formatted into HTML documentation pages. They are **not** regular
-comments — they feed the documentation generator.
+time and formatted into HTML documentation pages. For this skill, ddoc comments
+are **not protected**: they are judged by the same remove / keep / rewrite rules
+as regular comments. "Feeds a documentation generator" is not a keep-reason.
 
 ## Ddoc Comment Forms
 
@@ -11,10 +12,13 @@ Three forms are recognized as ddoc:
 | Form | Example | Notes |
 |------|---------|-------|
 | `/** ... */` | `/** Multi-line ddoc. */` | Two asterisks after opening `/` |
-| `/+ ... +/` | `/+ Plus-delimited ddoc. +/` | Two plus signs after opening `/` |
+| `/++ ... +/` | `/++ Plus-delimited ddoc. +/` | Two plus signs after opening `/`; closing may be `+/` or `++/` |
 | `///` | `/// One-line ddoc.` | Three slashes |
 
-Regular comments (`//`, `/* */`, `/+ +/`) are **not** ddoc.
+Regular comments (`//`, `/* */`, `/+ +/`) are **not** ddoc. In particular, a
+single-plus `/+ ... +/` (including nested `/+ /+ ... +/ +/`) is a regular
+comment, not ddoc — verified empirically against LDC 1.42 (`ldc2 -D` output
+omits it, includes `/++ ... +/`).
 
 ## Association Rules
 
@@ -24,21 +28,21 @@ Regular comments (`//`, `/* */`, `/+ +/`) are **not** ddoc.
 - Comments preceding the `ModuleDeclaration` apply to the **entire module**.
 - Comments on the same line as a declaration apply to **that declaration**.
 
-## Special Sections (ALWAYS KEEP)
+## Special Sections (functional, not just documentation)
 
-Ddoc special sections start with a keyword followed by a colon. These are
-**functional** — they affect compilation and documentation:
+Ddoc special sections start with a keyword followed by a colon. Several are
+**functional** — they affect compilation or documentation output:
 
-| Section | Purpose | Keep? |
-|---------|---------|-------|
-| `Example:` | Code compiled and run as a test | **ALWAYS** |
-| `Examples:` | Multiple code examples/tests | **ALWAYS** |
-| `Deprecated:` | Marks entity as deprecated | **ALWAYS** |
-| `Authors:` | List of authors | **KEEP** |
-| `Copyright:` | Legal information | **KEEP** |
-| `License:` | Legal information | **KEEP** |
-| `Debug:` | Debug-level docs (excluded from release) | **KEEP** |
-| `Macros:` | Define documentation macros | **ALWAYS** |
+| Section | Purpose | Handling |
+|---------|---------|----------|
+| `Example:` | Code compiled and run as a test | In scope — but it IS a test: a change must not alter what the example verifies. Report every touched section. |
+| `Examples:` | Multiple code examples/tests | Same as `Example:` |
+| `Deprecated:` | Marks entity as deprecated | In scope; report changes (affects compilation deprecation warnings) |
+| `Macros:` | Define documentation macros | In scope; report changes (affects other ddoc blocks using the macro) |
+| `Authors:` | List of authors | Keep |
+| `Copyright:` | Legal information | Keep |
+| `License:` | Legal information | Keep |
+| `Debug:` | Debug-level docs (excluded from release) | In scope like other prose |
 
 ## Formatting Elements
 
@@ -70,30 +74,41 @@ int getValue();
 
 ## Ddoc vs Regular Comments
 
-| Aspect | Ddoc (`/** */`, `///`, `/+ +/`) | Regular (`/* */`, `//`, `/+ +/`) |
+| Aspect | Ddoc (`/** */`, `/++ ... +/`, `///`) | Regular (`/* */`, `//`, `/+ +/`) |
 |--------|--------------------------------|----------------------------------|
 | Extracted by compiler | Yes | No |
 | Generates HTML docs | Yes | No |
 | `Example:` sections compiled | Yes | N/A |
 | Associated with declarations | Yes | No |
-| Can be removed freely | **NO** — feeds docs | Yes, if redundant |
+| Fix-comments scope | In scope — same rules as regular comments | In scope |
 
 ## Rules for Fix-Comments Skill
 
 When cleaning up D code comments:
 
-1. **Never remove ddoc blocks** (`/** */`, `///`, `/+ +/`) unless explicitly asked. They feed documentation generators.
-2. **Always keep special sections**: `Example:`, `Examples:`, `Deprecated:`, `Macros:`, `Authors:`, `Copyright:`, `License:`.
-3. **Ddoc `Example:` sections are tests**: Removing them removes compiled tests.
-4. **Regular comments** (`//`, `/* */`) follow normal remove/keep/rewrite rules.
-5. **Orphaned ddoc** (not attached to a declaration) is ignored by the compiler — these can be safely removed.
-6. **Module-level ddoc** (preceding module declaration) documents the entire module — keep it.
+1. **Ddoc is not protected.** `/** */`, `/++ ... +/`, and `///` blocks are
+   judged by the normal decision rules (KEEP/REMOVE/REWRITE/UNSURE) exactly
+   like regular comments. Obvious ddoc is removed; valuable ddoc is kept;
+   outdated ddoc is updated to match the code.
+2. **`Example:`/`Examples:` sections are compiled and run as tests.** They
+   are in scope (they are tests, and test code may be rewritten when needed),
+   but a change must not alter what the example verifies. Prefer removing or
+   rewording only the surrounding prose; report every touched section in the
+   run report.
+3. **Legal/attribution sections** (`Copyright:`, `License:`, `Authors:`) are
+   kept.
+4. **Orphaned ddoc** (not attached to a declaration) is ignored by the
+   compiler — remove it when it fails the normal rules.
+5. **Module-level ddoc** (preceding the module declaration) documents the
+   entire module — keep it when it carries real content; clean it like any
+   other comment when it doesn't.
 
 ## Detection
 
 A comment is ddoc if it uses:
 - `/**` (not `/*`)
 - `///` (not `//`)
-- `/+` (not `/++` or plain `/+ +/` — note: `/+ +/` with two plus signs IS ddoc)
+- `/++` (two plus signs after the opening `/`; a single `/+` is a regular
+  nested comment — verified against LDC 1.42)
 
 When in doubt, check if the comment form matches the three ddoc patterns above.

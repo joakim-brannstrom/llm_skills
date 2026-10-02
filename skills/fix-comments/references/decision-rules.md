@@ -1,5 +1,15 @@
 # Decision Rules — Concrete Criteria
 
+## Scope
+
+What may be edited is defined in `SKILL.md` (Scope): all comment forms —
+including ddoc, which is **not protected** — comments inside unittests,
+descriptive string literals (UDA description strings on unittests, strings
+used inside unittests), and markdown docs. Identifiers and non-descriptive
+string literals are out of scope: leave them and list them in the report.
+Plan-artifact references in scope are never kept — see
+`references/plan-artifacts.md`.
+
 ## Comment Style Rules
 
 When rewriting or evaluating comments, enforce these style guidelines:
@@ -24,7 +34,7 @@ When rewriting or evaluating comments, enforce these style guidelines:
 | Wrong/outdated content | Comment describes behavior code doesn't implement | Misleading |
 | Line-number reference | `// actual logic is on line 42` | Brittle: any edit above shifts lines, the reference silently rots |
 
-Task references into a deleted plan or requirements document are a distinct case: see `references/plan-artifacts.md` for scope rules (comments vs. code) and rephrasing patterns.
+Task references into a plan or requirements document are a distinct case — the referenced documents are ephemeral and the references are never kept: see `references/plan-artifacts.md` for scope rules (comments, test strings, docs vs. code) and rephrasing patterns.
 
 ## Line-Number References
 
@@ -64,6 +74,14 @@ input) are data, not navigation — judge them with the normal rules.
 - Test purpose descriptions (what scenario is being tested)
 - Test limitation notes (why full testing isn't possible)
 - Integration test instructions (how to enable with real data)
+
+Also in scope inside unittests (see `SKILL.md` Scope):
+- UDA description strings: `@("...")` on the line above `unittest {`.
+- Strings used inside unittests: assert messages, expected-output strings.
+
+These commonly carry plan-artifact references, which must be removed or
+rephrased. A minimal rewrite of the test itself is allowed when the string
+change requires it; the test must verify exactly the same thing afterwards.
 
 ## UNSURE — Keep and Flag
 

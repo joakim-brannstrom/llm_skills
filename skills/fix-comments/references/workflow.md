@@ -9,7 +9,7 @@ classification; never hold the whole file set's classification in context.
 
 - **List target files**: Identify all files in the specified directory/path.
 - **Change-set scoping**: If the target is "files changed since commit X", scope the set with `git diff --name-only X..HEAD`.
-- **Reference-removal jobs** (plan artifacts, requirement IDs): pattern-grep the target set to find every occurrence — IDs hide in code-block comments and doc prose too. Eyeball each hit for false positives. See `references/plan-artifacts.md`.
+- **Reference-removal jobs** (plan artifacts, requirement IDs): pattern-grep the target set to find every occurrence — IDs hide in code-block comments, doc prose, and descriptive strings (unittest UDA descriptions, assert messages) too. Eyeball each hit for false positives. In-scope references are never kept. See `references/plan-artifacts.md`.
 - **Write the todo list to disk** (e.g. `scratch/fix-comments/todo.md`), one line per file:
   `- [PENDING] path/to/file`
   The list is the run's checkpoint. It must exist on disk, not only in context —
@@ -33,7 +33,10 @@ For each file in the todo list, in order:
      (`readFile` with startLine/count, or grep) — never the whole file — and
      discard it from working context afterwards.
 4. **Verify before marking done**: re-read the edited regions; confirm no code
-   was removed (in a repo: `git diff -- <file>` shows comment lines only).
+   was removed (in a repo: `git diff -- <file>` shows comment lines and
+   in-scope string literal lines only). If a unittest was touched, confirm
+   the rewrite changed no assertion, no expected value, and no coverage, and
+   record it under "Tests touched" in the per-file section.
 5. **Record progress on disk**:
    - Todo list: change the line to `- [DONE] path (N removed, K kept)`, or
      `- [SKIPPED] path — reason`.
@@ -77,8 +80,12 @@ it was completed. Read it and present it. Per-file section format:
 ### [filename] ([new_line_count] lines, was [old_line_count])
 **Removed (N comments):**
 - Line X: `[comment text]` — [reason: obvious from code / task ref / wrong]
+**Rewritten (N):**
+- Line Y: `[old text]` → `[new text]` — [reason: outdated / plan-artifact ref / string cleanup]
 **Kept (notable):**
 - Line A: `[comment text]` — [reason: explains non-obvious behavior]
+**Tests touched:** (None, or file:line — what was rewritten; confirm test behavior unchanged)
+**Left in place (out of scope):** (None, or file:line — identifier / non-descriptive string)
 **Unsure:** (None, or list with location, text, and reasoning)
 ```
 

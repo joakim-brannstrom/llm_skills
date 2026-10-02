@@ -1,14 +1,16 @@
 # Plan-Artifact References — Removal Guide
 
 Use when the task is to strip references to a plan/requirements artifact
-(tasks, phases, requirement IDs, gates) from comments and docs — i.e. the
-referenced planning document was deleted or is out of scope, and the
-references now dangle.
+(tasks, phases, requirement IDs, decision points, gates) from comments,
+descriptive strings, and docs.
 
 ## Prerequisites
 
-- **Verify the referent is actually gone.** If the ID system is still live in a
-  living document, the IDs are traceability, not noise — keep them.
+- **Plan documents are ephemeral.** They are deleted after the work is done,
+  so every reference to one dangles by definition. **No in-scope reference
+  may be kept** — even if the referenced document still exists today, it will
+  not exist when the next reader looks at the code. There is no "keep as
+  traceability" option.
 - **Scope the file set explicitly.** "Files changed since commit X" =
   `git diff --name-only X..HEAD`. Do not widen to the whole repo on your own.
 - **Separate product features from plan artifacts.** A `/plan` slash command
@@ -25,13 +27,28 @@ references now dangle.
 | Gate names | `byte-stream gate`, `overall gate status` |
 | Cross-document section refs | `design §7 Task 3`, `see requirements R25` |
 
-## Scope: Comments, Not Code (default)
+## Scope
 
-The same strings often appear in string literals, printed output, and
-identifiers (`r2_cap`, `print("R2 max-width gate FAILED: ...")`). Default
-scope is comments and doc prose only. When code references are left
-in place, list them explicitly in the report as intentionally untouched —
-never silently skip them.
+**In scope** — references found here MUST be removed or rephrased:
+- All comments, in any comment form — including ddoc (`/** */`, `/++ ... +/`,
+  `///`) and comments inside unittests.
+- Descriptive string literals:
+  - UDA strings describing unittests: `@("...")` on the line above `unittest {`.
+  - Strings used inside unittests: assert messages, expected-output strings,
+    test names. These commonly carry task/decision-point references.
+- Markdown docs (design docs, AGENTS.md bullets, docstrings) and their
+  anchor links.
+
+**Out of scope** — leave in place and list them explicitly in the report
+(never silently skip):
+- Identifiers (`r2_cap`, `Task3Gate`) and code logic.
+- Non-descriptive string literals: protocol data, log prefixes, config keys.
+
+**Tests may be rewritten slightly.** Removing a reference from a string in a
+unittest can require touching the test around it — a reworded assert message,
+a shortened UDA description, a restructured string concatenation. Keep the
+change minimal: same assertions, same expected values, same coverage. Never
+change what a test verifies to make a reference disappear.
 
 ## How to Remove — Rephrase, Don't Just Delete
 
@@ -59,10 +76,19 @@ After renaming, grep the repo for the old anchor text to catch stragglers.
 ## Discovery
 
 Pattern-grep the target set instead of skimming — IDs hide in code-block
-comments and doc prose:
+comments, doc prose, and descriptive strings (unittest UDA descriptions,
+assert messages) too:
 
 ```
 grep -n -E 'Phase [0-9]|Task [0-9]|P[0-9] |gate|\b[AFHNLST][0-9]+\b' <files>
+```
+
+For reference-removal jobs, also grep the string-literal lines in unittests —
+UDA description strings and assert messages:
+
+```
+grep -n -E '@\("[^"]*"' <files>      # UDA strings on unittests
+grep -n -E 'assert\([^)]*"[^"]*(Task|Phase|P[0-9]|\b[AFHNLST][0-9]+\b)' <files>
 ```
 
 Letter+digit patterns produce false positives ("wipe" ~ "wip", "UTF-8",
@@ -71,6 +97,7 @@ Letter+digit patterns produce false positives ("wipe" ~ "wip", "UTF-8",
 ## Report Additions
 
 On top of the standard report, include:
-- **Left in place (code, out of comment scope)**: file:line — identifier/string
+- **Left in place (out of scope)**: file:line — identifier / non-descriptive string
 - **Left in place (product feature)**: file:line — why it is not an artifact
+- **Tests touched**: file:line — what was rewritten and confirmation that test behavior is unchanged
 - **Anchor links updated**: old → new
