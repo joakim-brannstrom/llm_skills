@@ -26,8 +26,10 @@ For each file in the todo list, in order:
    UNSURE, reason. Classify only the current file.
 3. **Reason, then edit** the file:
    - One or few edits: `editFile`.
-   - Many edits in one file: prefer one atomic multi-hunk `applyDiff` — a
-     failed hunk writes nothing, so no partial state is ever left behind.
+   - Many edits in one file: there is no atomic multi-hunk tool —
+     apply each hunk with `editFile` and verify after every edit;
+     re-read the file (or use `byContent` targeting) whenever an edit
+     shifts line numbers, so no stale byLine target is ever trusted.
    - Cross-reference exception: if another file must be consulted (e.g. an
      anchor link, a shared definition), read only the needed line range
      (`readFile` with startLine/count, or grep) — never the whole file — and
@@ -43,6 +45,10 @@ For each file in the todo list, in order:
    - Append the per-file report section (Phase 4 format) to
      `scratch/fix-comments/report.md`. Append immediately — never try to
      reconstruct the report from context at the end of the run.
+   - Appending via `editFile` byContent anchors at the LAST occurrence of
+     the search block. Repeated section footers (e.g. `**Unsure:** None`)
+     make later sections land under an earlier one. End each section with
+     a unique marker (e.g. `<!-- end: <file> -->`).
 6. **Drop the file**: treat its content as out of scope for the remaining
    files. Do not re-read done files except to fix a verified defect.
 

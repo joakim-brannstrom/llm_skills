@@ -14,7 +14,7 @@ description: >-
   remove comments, comment cleanup, comment quality, redundant comments,
   outdated comments, plan artifact references, requirement ID cleanup, strip
   task references, remove gate references, line reference cleanup.
-version: 1.3.0
+version: 1.4.0
 ---
 
 # Fix Comments Skill
@@ -70,7 +70,7 @@ per-file loop — only on-disk state (todo, edited files, report) survives
 compression.
 
 1. **Discovery** — List target files, write the todo list to disk. Do not read file contents.
-2. **Per-file loop** — For each file: read it (one at a time), classify tersely, edit (few edits: `editFile`; many: one atomic `applyDiff`), verify, mark DONE in the todo list, append the per-file report section to disk, drop the file.
+2. **Per-file loop** — For each file: read it (one at a time), classify tersely, edit (`editFile`, verified after every edit), verify, mark DONE in the todo list, append the per-file report section to disk, drop the file.
 3. **Report** — Present the accumulated on-disk report, clean up scratch files.
 
 ## Special Cases
