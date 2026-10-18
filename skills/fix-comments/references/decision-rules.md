@@ -19,6 +19,17 @@ When rewriting or evaluating comments, enforce these style guidelines:
 - **No mid-sentence breaks**: Each line should be a complete thought, not a sentence split across lines.
 - **Simple language**: ASD-STE100 Simplified Technical English. Short words, short sentences.
 - **Code first, comments later**: Write code first. Add comments only where genuinely needed.
+- **Compress big comments**: A comment over 2-3 lines that restates adjacent code or
+  wraps mid-sentence gets compressed into separate short thoughts. Keep the
+  non-obvious "why"; a 4-line comment carrying 4 distinct facts can stay.
+- **Present tense, current behavior**: Describe what the code does today. Never
+  reference old implementations ("legacy", "the old X parser", "keeping parity
+  with", "used to", "no longer").
+- **No commentary on other functions' internals**: Do not explain another
+  function's in-depth behavior from a call site. Exception: a bug or workaround
+  note that explains why the surrounding code is safe.
+- **Spaced dashes, no em dashes**: Use a spaced " - " instead of the em dash
+  "—". Applies to comments and docs.
 
 ## Always Remove
 
@@ -31,6 +42,9 @@ When rewriting or evaluating comments, enforce these style guidelines:
 | Duplicate parameter docs | `// func(a, b, c)` before `func(a, b, c)` | Redundant listing |
 | Obvious null/error checks | `// Null check prevents crash` before `if (x is null)` | Defensive pattern is evident |
 | Section markers | `// --- Unit tests ---` | Visual noise, no semantic value |
+| ASCII art banners | `// --- empty iniFilename: no-ops ---------------` | The dashes are decoration; strip them and keep the text as a plain comment |
+| Old implementation references | `// same policy as the old "WxH" parser` | Comments describe today's behavior, not history |
+| Cross-function internals | `// mirrors configuredFileFontSize's rejection` | Not this call site's business (a bug/workaround note is the exception) |
 | Wrong/outdated content | Comment describes behavior code doesn't implement | Misleading |
 | Line-number reference | `// actual logic is on line 42` | Brittle: any edit above shifts lines, the reference silently rots |
 
