@@ -14,18 +14,13 @@ description: >-
   remove comments, comment cleanup, comment quality, redundant comments,
   outdated comments, plan artifact references, requirement ID cleanup, strip
   task references, remove gate references, line reference cleanup.
-version: 1.4.0
+version: 1.5.0
 ---
 
 # Fix Comments Skill
 
 Audit and clean up source code comments. Eliminate redundancy, fix inaccuracies,
 and enforce a "code-first" documentation philosophy.
-
-## Core Principle
-
-Comments should explain **why** and **what's non-obvious**, not **what** the code
-literally does. If the code is self-documenting, the comment is redundant.
 
 ## When to Use
 
@@ -35,6 +30,11 @@ Use this skill when the user asks to:
 - Fix outdated comments that no longer match the code
 - Review comment quality
 - Strip references to plan/requirement artifacts (tasks, phases, decision points, gates) from comments, test strings, or docs
+
+## Core Principle
+
+Comments should explain **why** and **what's non-obvious**, not **what** the code
+literally does. If the code is self-documenting, the comment is redundant.
 
 ## Scope
 

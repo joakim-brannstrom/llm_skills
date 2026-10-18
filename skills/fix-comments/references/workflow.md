@@ -62,7 +62,10 @@ Only when the change needs **no per-comment judgment** (e.g. renaming a
 comment banner across many identical files) may a script be used instead of
 the loop. Drive it from grep output — do not read the files into context
 first — then verify each file with `git diff` and record each in the todo list
-and report as above.
+and report as above. For patterned single-line edits in one file (e.g.
+stripping banner decoration), write the sed script with `writeFile` and run
+`sed -i -f script` — inline quoting in `executeCommand` breaks easily on
+nested quotes.
 
 ### Edit Safety Rules
 
