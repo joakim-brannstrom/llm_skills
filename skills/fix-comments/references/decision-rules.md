@@ -30,6 +30,44 @@ When rewriting or evaluating comments, enforce these style guidelines:
   note that explains why the surrounding code is safe.
 - **Spaced dashes, no em dashes**: Use a spaced " - " instead of the em dash
   "—". Applies to comments and docs.
+- **No semicolon splices**: Connect clauses with a comma or start a new
+  sentence. A semicolon splice ("... the table; a number that ...") is not how
+  prose reads.
+- **Purpose before detail**: A comment says what the thing is for and who
+  drives it ("D reports the phase as a plain int, and a number this build
+  cannot name answers Idle"), not the job restated as jargon ("The phase an
+  ABI ordinal names"). Implementation specifics come after the why, if at all.
+- **ASCII prose, UI glyphs stay**: Prose stays ASCII, but non-ASCII glyphs that
+  quote real UI output - status glyphs (`◐`), meter art (`████░░`), the
+  missing-value dash, box-drawing mocks - stay in comments and check strings.
+  Tests and golden gates may assert on them; replacing them with prose breaks
+  the check.
+- **Diff-scoped passes cap added blocks**: When the job is limited to lines
+  added vs a base commit, apply the line cap to ADDED lines only: any added
+  comment block longer than 5 lines is compressed to at most 5 (fold the
+  still-needed facts, drop the narration). Context (base) lines are never
+  touched, even where they violate the same rules.
+
+## Temporal and Change-Log Comments
+
+A comment that narrates the *change* rather than the *behavior* reads like a
+commit message. The VCS carries the history; the comment must describe today's
+code as if it always worked this way. Ban this vocabulary:
+
+- "now" / "no longer" as a temporal marker ("is a real control now", "no longer applies")
+- "is/are gone", "used to", "the old X", "previously", "formerly"
+- "legacy" or "moved to/here" as history ("kept here after B4 moved the meter")
+- "promoted to", "retired", "removed", "added" as narration of this change
+
+| Before (change-log) | After (behavior) |
+|---------------------|------------------|
+| `// the meter is a real control now that the sheet exists` | `// the sheet's meter is the live control; it mirrors only while the sheet is open` |
+| `// the speed and state chips are gone - the state is the row's word now` | `// the state is the row's word; the chips are not drawn` |
+| `// (the old four-chip strip is history; the sentence's state word survives in the log)` | delete, or keep only the still-true fact |
+| `// same as before, but the pill is gone` | describe what IS drawn and why |
+
+Test: if the sentence would be false (or pointless) the day before the change
+was written, it is narration, not documentation.
 
 ## Always Remove
 
@@ -42,11 +80,15 @@ When rewriting or evaluating comments, enforce these style guidelines:
 | Duplicate parameter docs | `// func(a, b, c)` before `func(a, b, c)` | Redundant listing |
 | Obvious null/error checks | `// Null check prevents crash` before `if (x is null)` | Defensive pattern is evident |
 | Section markers | `// --- Unit tests ---` | Visual noise, no semantic value |
-| ASCII art banners | `// --- empty iniFilename: no-ops ---------------` | The dashes are decoration; strip them and keep the text as a plain comment |
+| ASCII art banners | `// --- empty iniFilename: no-ops ---------------`, or a title sandwiched between two pure-dash lines | The dashes are decoration; keep the title as a plain comment and delete the dash-only lines |
 | Old implementation references | `// same policy as the old "WxH" parser` | Comments describe today's behavior, not history |
 | Cross-function internals | `// mirrors configuredFileFontSize's rejection` | Not this call site's business (a bug/workaround note is the exception) |
 | Wrong/outdated content | Comment describes behavior code doesn't implement | Misleading |
 | Line-number reference | `// actual logic is on line 42` | Brittle: any edit above shifts lines, the reference silently rots |
+| Temporal marker | `... is a real control now that the sheet exists` | Change-log narration; the VCS carries the history |
+| Change narration | `the speed and state chips are gone: the state is the row's word now` | Same |
+| Review-finding citation | `(review finding: Ctrl+K above the sheet used to do exactly that)` | Process artifact that duplicates the adjacent clause |
+| Task attribution | `Task 28's note: the v4 status row has to hide ...` | Cites a plan artifact and the old implementation |
 
 Task references into a plan or requirements document are a distinct case — the referenced documents are ephemeral and the references are never kept: see `references/plan-artifacts.md` for scope rules (comments, test strings, docs vs. code) and rephrasing patterns.
 
