@@ -9,11 +9,18 @@ classification; never hold the whole file set's classification in context.
 
 - **List target files**: Identify all files in the specified directory/path.
 - **Change-set scoping**: If the target is "files changed since commit X", scope the set with `git diff --name-only X..HEAD`.
-- **Reference-removal jobs** (plan artifacts, requirement IDs): pattern-grep the target set to find every occurrence — IDs hide in code-block comments, doc prose, and descriptive strings (unittest UDA descriptions, assert messages) too. Eyeball each hit for false positives. In-scope references are never kept. See `references/plan-artifacts.md`.
+- **Reference-removal jobs** (plan artifacts, requirement IDs): pattern-grep the target set to find every occurrence — IDs hide in code-block comments, doc prose, and descriptive strings (unittest UDA descriptions, assert messages) too. Eyeball each hit for false positives. In-scope references are never kept. See `references/plan-artifacts.md`. Write the grep as a small script file and run it: complex patterns with quotes and `$` breaks when typed directly into an execution tool's nested command line, while a script file just works. Keep the dump (grep -n output) on disk - it survives compression and is the per-file checklist.
 - **Write the todo list to disk** (e.g. `scratch/fix-comments/todo.md`), one line per file:
   `- [PENDING] path/to/file`
   The list is the run's checkpoint. It must exist on disk, not only in context —
   compression can summarize or lose an in-context list; the file on disk survives.
+- **Line-budget scan (diff-scoped passes)**: when the pass targets added lines
+  vs a base commit, also scan the diff for added comment blocks over the cap
+  (5 lines): pipe `git diff <base> -- <files>` through `grep '^+'` and count
+  runs of consecutive comment lines with a small awk state machine. Each run
+  over the cap is a per-file checklist item next to the reference-removal hits.
+  Use plain `git diff <base>` (not `base...HEAD`) so uncommitted worktree edits
+  are visible.
 
 ## Phase 2: Per-File Loop (one file at a time)
 
@@ -79,6 +86,9 @@ For files not already verified in the loop:
 - [ ] No code was accidentally removed.
 - [ ] Indentation matches file conventions; no extra blank lines introduced.
 - [ ] Doc comment blocks (`/** */`) properly closed.
+- [ ] Rebuild and run the test suite - even for comment-only edits. Ddoc
+  `Example:` sections and unittest assert strings compile, and vocabulary or
+  golden gates read comment/string text; a comment-only change can break the build.
 
 ## Phase 4: Report
 
