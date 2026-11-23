@@ -27,7 +27,9 @@ When rewriting or evaluating comments, enforce these style guidelines:
   with", "used to", "no longer").
 - **No commentary on other functions' internals**: Do not explain another
   function's in-depth behavior from a call site. Exception: a bug or workaround
-  note that explains why the surrounding code is safe.
+  note that explains why the surrounding code is safe. For ddoc function docs
+  this extends to a one-home-per-contract rule - see
+  "Function Ddoc: Usage Contract, Not Implementation" below.
 - **Spaced dashes, no em dashes**: Use a spaced " - " instead of the em dash
   "—". Applies to comments and docs.
 - **No semicolon splices**: Connect clauses with a comma or start a new
@@ -47,6 +49,45 @@ When rewriting or evaluating comments, enforce these style guidelines:
   comment block longer than 5 lines is compressed to at most 5 (fold the
   still-needed facts, drop the narration). Context (base) lines are never
   touched, even where they violate the same rules.
+
+## Function Ddoc: Usage Contract, Not Implementation
+
+A function's ddoc is its usage contract: what it does, what the caller must
+provide, and what comes out. It is not a walkthrough of the implementation and
+not a digest of other components' comments. This applies to ddoc exactly like
+regular comments; the failure mode is a large doc block that narrates how
+callees and callers work while the reader wanted to know how to call it.
+
+Structure for API functions whose comment is the contract:
+
+- One line of purpose.
+- `Params:` section: per parameter, what it must contain and any caller
+  obligations (pre-filtering, keying, normalization, forbidden inputs).
+- `Returns:` section: the function-specific decision rule (input -> output),
+  plus pointers to contracts owned elsewhere.
+
+Rules:
+
+- **One home per contract.** A contract lives on the declaration that owns
+  it: a struct field's doc owns that field's semantics and caller contract; a
+  callee's doc owns its own completion/flag semantics. When a function doc
+  restates another declaration's contract, reduce it to a pointer
+  ("see `X`") - and first move the contract to its owner if it was only
+  stated in the wrong place, so shrinking never leaves it homeless.
+- **The function-specific decision rule stays in Returns** even when the
+  struct docs carry the field semantics: what makes an entry an `add` is this
+  function's logic, not the struct's.
+- **Input constraints stay in Params, compressed to the essential why.**
+  "Do NOT use `dirEntries(_, SpanMode.depth)`: it follows symlinked
+  directories and the filter only screens yielded entries" is a usage
+  constraint on the parameter, not implementation narrative - keep it, short.
+  The full design rationale belongs where the constraint is implemented.
+- **A moved contract may make the owning doc longer** - that is correct even
+  if the field doc becomes the longest comment in the struct.
+
+| Before (30-line doc block) | After |
+|----------------------------|-------|
+| Explains the caller's prune loop, the callee's exhausted flag, and the ordering rationale inline | Purpose line + `Params:` obligations + `Returns:` with the function's own add rule and "the field contracts are documented on `ReconcilePlan`" |
 
 ## Temporal and Change-Log Comments
 
