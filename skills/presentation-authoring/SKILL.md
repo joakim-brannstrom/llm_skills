@@ -1,6 +1,12 @@
 ---
 name: presentation-authoring
-description: Create reproducible PowerPoint decks with python-pptx, extract Markdown with MarkItDown, render slides to PDF/PNG, and perform structural, textual, and vision-based QA with iterative repairs. Use when creating, revising, converting, rendering, inspecting, or validating presentations. Triggers on: presentation, PowerPoint, PPTX, slide deck, slides, MarkItDown presentation, render slides, presentation validation, visual QA
+description: >-
+  Create reproducible PowerPoint decks with python-pptx, extract Markdown with
+  MarkItDown, render slides to PDF/PNG, and perform structural, textual, and
+  vision-based QA with iterative repairs. Use when creating, revising,
+  converting, rendering, inspecting, or validating presentations. Triggers on:
+  presentation, PowerPoint, PPTX, slide deck, slides, MarkItDown presentation,
+  render slides, presentation validation, visual QA
 version: 1.0.0
 ---
 
